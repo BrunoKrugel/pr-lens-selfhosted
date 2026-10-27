@@ -13,7 +13,7 @@ answers `"tiles": []` — which the contract allows.
 
 ```bash
 cp .env.example .env   # set PUBLIC_BASE_URL to the URL Cloudflare proxies here
-docker compose up -d   # restart: unless-stopped, listens on 8080
+docker compose up -d   # restart: unless-stopped, listens on 8080, published on host port 8585
 ```
 
 The `-base-url` flag roots the `viewUrl`, `editUrl` and `embedUrl` the server hands out.
