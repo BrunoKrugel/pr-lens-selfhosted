@@ -1,0 +1,13 @@
+services:
+  canvas-server:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    command:
+      - "-addr"
+      - ":8080"
+      # Public URL Cloudflare proxies to this host, so the editUrl and embedUrl
+      # handed to the CLI carry the right host.
+      - "-base-url"
+      - "${PUBLIC_BASE_URL:-http://localhost:8080}"
