@@ -1,0 +1,14 @@
+{
+  "name": "canvas-viewer",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "mkdir -p ../internal/webui/dist && esbuild src/polyfills.ts --bundle --minify --format=iife --outfile=../internal/webui/dist/polyfills.js && cp src/index.html ../internal/webui/dist/ && esbuild src/viewer.ts --bundle --minify --format=iife --alias:node:crypto=./src/nodeshim.ts --outfile=../internal/webui/dist/viewer.js"
+  },
+  "dependencies": {
+    "@coldtea/pr-lens-renderer": "0.4.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.24.0"
+  }
+}

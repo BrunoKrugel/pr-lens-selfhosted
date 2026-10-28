@@ -44,6 +44,23 @@ npx @coldtea/pr-lens-cli@latest render .pr-lens/graph.json --theme dark
 - The document validity check is shallow (`kind: "graph"`). A server that wants
   the full check the hosted app does can parse with `@coldtea/pr-lens-schema`.
 
+## Web viewer
+
+`/c/{id}` serves a dark-theme canvas page. The Go binary embeds a small JS
+bundle (built from the official `@coldtea/pr-lens-renderer`, with a sha256
+shim so it runs in the browser) that fetches the document from the API and
+draws every view client-side. `/c/{id}.svg` serves the same page, so the
+CLI's embed link works too.
+
+Rebuild the bundle after touching `web/`:
+
+```bash
+cd web && npm install && npm run build   # outputs to internal/webui/dist
+```
+
+`go build` needs `internal/webui/dist/` to exist; the Dockerfile builds it
+in a node stage.
+
 ## Layout
 
 - `cmd/canvas-server` — the binary

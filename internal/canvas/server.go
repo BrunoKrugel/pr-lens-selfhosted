@@ -5,6 +5,7 @@
 package canvas
 
 import (
+	"canvas-server/internal/webui"
 	"crypto/rand"
 	"crypto/sha256"
 	"crypto/subtle"
@@ -300,11 +301,26 @@ func (s *Server) delete(w http.ResponseWriter, r *http.Request, id string) {
 	}{ID: id, Deleted: true})
 }
 
+func servePage(w http.ResponseWriter) {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.Header().Set("Cache-Control", "no-store")
+	_, _ = w.Write(webui.Index)
+}
+
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	path := strings.Trim(r.URL.Path, "/")
 	switch {
 	case path == "api/canvas" && r.Method == http.MethodPost:
 		s.mint(w, r)
+	case strings.HasPrefix(path, "c/"):
+		servePage(w)
+	case path == "viewer.js", path == "polyfills.js":
+		w.Header().Set("Content-Type", "text/javascript; charset=utf-8")
+		if path == "viewer.js" {
+			_, _ = w.Write(webui.ViewerJS)
+		} else {
+			_, _ = w.Write(webui.Polyfills)
+		}
 	case strings.HasPrefix(path, "api/canvas/"):
 		rest := strings.TrimPrefix(path, "api/canvas/")
 		id, action, _ := strings.Cut(rest, "/")

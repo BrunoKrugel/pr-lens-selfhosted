@@ -279,10 +279,10 @@ func TestDeleteRemovesCanvas(t *testing.T) {
 	assertError(t, do(s, http.MethodGet, "/api/canvas/"+id, nil, ""), http.StatusNotFound, "NOT_FOUND")
 }
 
-func TestServeNothingAtCanvasPage(t *testing.T) {
+func TestCanvasPageAnswersEveryId(t *testing.T) {
 	s := newTestServer(t)
-	if rec := do(s, http.MethodGet, "/c/"+strings.Repeat("a", 22), nil, ""); rec.Code != http.StatusNotFound {
-		t.Fatalf("/c/{id} status = %d, want 404", rec.Code)
+	if rec := do(s, http.MethodGet, "/c/"+strings.Repeat("a", 22), nil, ""); rec.Code != http.StatusOK {
+		t.Fatalf("/c/{id} status = %d, want 200", rec.Code)
 	}
 }
 
@@ -306,3 +306,39 @@ func TestStoreSurvivesMultipleCanvases(t *testing.T) {
 }
 
 var _ = bytes.MinRead
+
+func TestCanvasPageServesViewer(t *testing.T) {
+	s := newTestServer(t)
+	rec := do(s, http.MethodGet, "/c/"+strings.Repeat("a", 22), nil, "")
+	if rec.Code != http.StatusOK {
+		t.Fatalf("canvas page status = %d, want 200", rec.Code)
+	}
+	if ct := rec.Header().Get("Content-Type"); !strings.HasPrefix(ct, "text/html") {
+		t.Fatalf("content type = %q, want text/html", ct)
+	}
+	body := rec.Body.String()
+	if !strings.Contains(body, `id="app"`) || !strings.Contains(body, "viewer.js") {
+		t.Fatalf("canvas page missing app root or viewer script:\n%s", body)
+	}
+
+	rec = do(s, http.MethodGet, "/c/"+strings.Repeat("a", 22)+".svg", nil, "")
+	if rec.Code != http.StatusOK {
+		t.Fatalf("canvas .svg page status = %d, want 200", rec.Code)
+	}
+
+	rec = do(s, http.MethodGet, "/viewer.js", nil, "")
+	if rec.Code != http.StatusOK {
+		t.Fatalf("viewer.js status = %d, want 200", rec.Code)
+	}
+	if ct := rec.Header().Get("Content-Type"); !strings.Contains(ct, "javascript") {
+		t.Fatalf("viewer.js content type = %q", ct)
+	}
+}
+
+func TestPolyfillsServed(t *testing.T) {
+	s := newTestServer(t)
+	rec := do(s, http.MethodGet, "/polyfills.js", nil, "")
+	if rec.Code != http.StatusOK || !strings.Contains(rec.Body.String(), "Buffer") {
+		t.Fatalf("polyfills.js status = %d, body %d bytes", rec.Code, rec.Body.Len())
+	}
+}
